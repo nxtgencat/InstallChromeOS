@@ -1,6 +1,6 @@
 brunch https://github.com/sebanc/brunch/releases/download/r120-stable-20240107/brunch_r120_stable_20240107.tar.gz
 shyvana https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_rammus_recovery_stable-channel_mp-v3.bin.zip V119
-bobba https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_octopus_recovery_stable-channel_mp-v32.bin.zip
-jinlon https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_hatch_recovery_stable-channel_mp-v7.bin.zip
-voxel https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_volteer_recovery_stable-channel_mp-v9.bin.zip
-gumboz https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_zork_recovery_stable-channel_mp-v8.bin.zip
+bobba https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_octopus_recovery_stable-channel_mp-v32.bin.zip V119
+jinlon https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_hatch_recovery_stable-channel_mp-v7.bin.zip V119
+voxel https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_volteer_recovery_stable-channel_mp-v9.bin.zip V119
+gumboz https://dl.google.com/dl/edgedl/chromeos/recovery/chromeos_15633.72.0_zork_recovery_stable-channel_mp-v8.bin.zip V119
