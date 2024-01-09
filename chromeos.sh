@@ -68,7 +68,7 @@ os_install() {
   case $choice in
     [yY])
       echo -e "\n- Installing Chrome OS..."
-      sudo bash chromeos-install.sh -src "$codename.bin.zip" -dst /dev/sda
+      sudo bash chromeos-install.sh -src "chromeos.bin" -dst /dev/sda
       echo -e "\n- Chrome OS Installation Completed. \n"
       exit 0
       ;;
@@ -76,7 +76,7 @@ os_install() {
       echo " "
       read -p "- Enter the desired installation location: /dev/" disk
       echo -e "\n- Installing Chrome OS..."
-      sudo bash chromeos-install.sh -src "$codename.bin.zip" -dst "/dev/$disk"
+      sudo bash chromeos-install.sh -src "chromeos.bin" -dst "/dev/$disk"
       echo -e "\n- Chrome OS Installation Completed. \n"
       exit 0
       ;;
