@@ -7,7 +7,7 @@ raw_file_url="https://raw.githubusercontent.com/nxtgencat/ChromeOS/main/chromeos
 raw_content=$(wget -qO - "$raw_file_url")
 
 # Function to install dependencies based on environment
-install_dependencies() {
+environment() {
   echo -e "\n- Installing Dependencies... \n"
   sleep 1
   if [ -n "$TERMUX_VERSION" ]; then
@@ -21,7 +21,7 @@ install_dependencies() {
   fi
 }
 
-install_dependencies
+environment
 
 # Function to get version
 version_get() {
@@ -66,37 +66,40 @@ os_install() {
   esac
 }
 
-# Function to install Chrome OS
+
+# Function to install ChromeOS
 chromeos_install() {
   local codename=$1
   local link=$(echo "$raw_content" | awk -v codename="$codename" '$1 == codename {print $2}')
 
   if [ -n "$link" ]; then
     echo -e "\n- Fetching link ($codename) :\n$link\n"
-    echo -e "- Downloading Chrome OS Files...\n"
-    wget -q --show-progress -O "$codename.bin.zip" "$link"
-    if [ -e "$codename.bin.zip" ]; then
-      echo -e "\n- Success! File downloaded.\n"
-      brunch_get "brunch"
-      echo -e "- Extracting ChromeOS...\n"
-      unzip "$codename.bin.zip" | pv -l >/dev/null
-      original_name=$(unzip -Z -1 "$codename.bin.zip")
-      mv "$original_name" chromeos.bin
+    echo -e "- Downloading ChromeOS Files...\n"
+    length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
+     wget -q --show-progress -O "$codename.bin.zip" "$link"
+     downloaded_size=$(wc -c < "$codename.bin.zip")
+    
+     if [ "$downloaded_size" -eq "$length" ]; then
+       echo -e "- ChromeOS Files Downloaded\n"
+       echo -e "- Extracting ChromeOS...\n"
+       unzip "$codename.bin.zip" | pv -l >/dev/null
+       original_name=$(unzip -Z -1 "$codename.bin.zip")
+       mv "$original_name" chromeos.bin
 
-      if [ ! -e "/etc/os-release" ]; then
-        os_install
-      else
-        echo -e "\n- Unsupported Environment!"
-        echo -e "\n- Chrome OS Not Installed.\n"
-        exit 1
-      fi
-    else
-      echo -e "\n- Error: File download failed.\n"
-      echo -e "\n- Aborting...\n"
-      exit 1
-    fi
+       if [ -e "/etc/os-release" ]; then
+         os_install
+       else
+         echo -e "\n- Unsupported Environment!"
+         echo -e "\n- ChromeOS Not Installed.\n"
+         exit 1
+       fi
+     else
+       echo -e "\n- Error: ChromeOS Files Not Downloaded.\n"
+       echo -e "\n- Aborting...\n"
+       exit 1
+     fi
   else
-    echo -e "- Link not found for codename: $codename\n"
+    echo -e "- Link Not Found For Codename: $codename\n"
     exit 1
   fi
 }
@@ -109,19 +112,22 @@ brunch_get() {
   if [ -n "$link" ]; then
     echo -e "\n- Fetching link ($codename) :\n$link\n"
     echo -e "- Downloading Brunch Framework...\n"
-    wget -q --show-progress -O "$codename.tar.gz" "$link"
-    if [ -e "$codename.tar.gz" ]; then
-      echo -e "\n- Success! File downloaded.\n"
-      echo -e "\n- Extracting Brunch Framework...\n"
-      tar -xzvf "$codename.tar.gz"
-      echo -e "\n- Extracted Brunch Framework \n"
-    else
-      echo -e "\n- Error: File download failed.\n"
-      echo -e "\n- Aborting...\n"
-      exit 1
-    fi
+    length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
+     wget -q --show-progress -O "$codename.tar.gz" "$link"
+     downloaded_size=$(wc -c < "$codename.tar.gz")
+    
+     if [ "$downloaded_size" -eq "$length" ]; then
+       echo -e "- Brunch Files Downloaded\n"
+       echo -e "- Extracting Brunch Framework...\n"
+       tar -xzvf "$codename.tar.gz"
+       echo -e "\n- Extracted Brunch Framework \n"
+     else
+       echo -e "\n- Error: Brunch Framework Not Downloaded.\n"
+       echo -e "\n- Aborting...\n"
+       exit 1
+     fi
   else
-    echo -e "- Link not found for codename: $codename\n"
+    echo -e "- Link Not Found For Codename: $codename\n"
     exit 1
   fi
 }
@@ -150,18 +156,23 @@ while true; do
 
   case $choice in
     1)
+      brunch_get "brunch"
       chromeos_install "shyvana"
       ;;
     2)
+      brunch_get "brunch"
       chromeos_install "bobba"
       ;;
     3)
+      brunch_get "brunch"
       chromeos_install "jinlon"
       ;;
     4)
+      brunch_get "brunch"
       chromeos_install "voxel"
       ;;
     5)
+      brunch_get "brunch"
       chromeos_install "gumboz"
       ;;
     6)
@@ -174,7 +185,6 @@ while true; do
       ;;
   esac
 done
-
 
 
 #nxtgencat
