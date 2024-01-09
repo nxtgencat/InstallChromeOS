@@ -2,11 +2,8 @@
 
 clear
 
-# Fetch the raw file content
-raw_file_url="https://raw.githubusercontent.com/nxtgencat/ChromeOS/main/chromeos"
-raw_content=$(wget -qO - "$raw_file_url")
-
 purge() {
+    echo -e "----------------------------------------\n"
   echo -e "- Purging Cache... \n"
   rm -rf *
 }
@@ -20,8 +17,9 @@ environment() {
     echo -e "- Running in Termux\n"
     pkg update
     pkg install -y wget pv figlet
-    mkdir -p /sdcard/ChromeOS
-    cd /sdcard/ChromeOS
+    nxtspace=ChromeOS
+    mkdir -p "$nxtspace"
+    cd "$nxtspace"
     purge
   elif [ -e "/etc/os-release" ]; then
     echo -e "----------------------------------------\n"
@@ -31,20 +29,23 @@ environment() {
     echo -e "----------------------------------------\n"
     if grep -q "/cdrom" /etc/mtab; then
       echo -e "- Running In Live Mode.\n"
-      mkdir -p /cdrom/ChromeOS
-      cd /cdrom/ChromeOS
+      nxtspace=/cdrom/ChromeOS
+      mkdir -p "$nxtspace"
+      cd "$nxtspace"
       purge
     else
       echo -e "- Running In Installed Mode.\n"
-      mkdir ChromeOS
-      cd ChromeOS
+      nxtspace=ChromeOS
+      mkdir -p "$nxtspace"
+      cd "$nxtspace"
       purge
     fi
   fi
 }
 
-
-
+# Fetch the raw file content
+raw_file_url="https://raw.githubusercontent.com/nxtgencat/ChromeOS/main/chromeos"
+raw_content=$(wget -qO - "$raw_file_url")
 
 environment
 
@@ -53,6 +54,86 @@ version_get() {
   local codename=$1
   local version=$(echo "$raw_content" | awk -v codename="$codename" '$1 == codename {print $3}')
   echo "(Stable: $version)"
+}
+
+
+extract_tar() {
+ local userinputzipfile=$1
+tempdir="zipnxt"
+tempdirx="$tempdir/ziptemp"
+logfile="$tempdir/zipnxt.log"
+
+rm -rf "tempdir"
+mkdir -p "$tempdirx"
+# Function to display a progress bar
+show_progress_bar() {
+  local width=50
+  local percentage=$1
+  local progress=$((width * percentage / 100))
+  printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
+}
+
+# Unzip and show progress
+tar -ztvf "$userinputzipfile" | awk '{print $6, $3}' > "$logfile"
+total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
+
+# Extract files
+tar -xzf "$userinputzipfile" -C "$tempdirx" &
+
+# Monitor progress
+while :; do
+  completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
+  progress_percentage=$((completed_size * 100 / total_size))
+  show_progress_bar "$progress_percentage"
+
+  if [[ "$completed_size" -ge "$total_size" ]]; then
+    break
+  fi
+ sleep 1
+done
+mv -f "$tempdirx"/* .
+rm -rf "$tempdir"
+}
+
+
+extract_zip() {
+ local userinputzipfile=$1
+tempdir="zipnxt"
+tempdirx="$tempdir/ziptemp"
+logfile="$tempdir/zipnxt.log"
+
+rm -rf "tempdir"
+mkdir -p "$tempdirx"
+
+# Function to display a progress bar
+show_progress_bar() {
+  local width=50
+  local percentage=$1
+  local progress=$((width * percentage / 100))
+  printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
+}
+
+# Unzip and show progress
+unzip -l "$userinputzipfile" | awk '{print $4, $1}' > "$logfile"
+total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
+
+# Extract files
+unzip -q "$userinputzipfile" -d "$tempdirx" &
+
+# Monitor progress
+while :; do
+  completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
+  progress_percentage=$((completed_size * 100 / total_size))
+  show_progress_bar "$progress_percentage"
+
+  if [[ "$completed_size" -ge "$total_size" ]]; then
+    break
+  fi
+ sleep 1
+done
+
+mv -f "$tempdirx"/* .
+rm -rf "$tempdir"
 }
 
 # Function to install ChromeOS into the system
@@ -98,7 +179,7 @@ chromeos_install() {
   local link=$(echo "$raw_content" | awk -v codename="$codename" '$1 == codename {print $2}')
 
   if [ -n "$link" ]; then
-    echo -e "\n- Fetching link ($codename) :\n$link\n"
+    echo -e "\n- Fetching link ($codename)\n"
     echo -e "- Downloading ChromeOS Files...\n"
     length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
      wget -q --show-progress -O "$codename.bin.zip" "$link"
@@ -107,9 +188,9 @@ chromeos_install() {
      if [ "$downloaded_size" -eq "$length" ]; then
        echo -e "\n- ChromeOS Files Downloaded\n"
        echo -e "- Extracting ChromeOS Files...\n"
-       unzip "$codename.bin.zip" | pv -l >/dev/null
+       extract_zip "$codename.bin.zip"
        if [ $? -eq 0 ]; then
-         echo -e "\n- Extracted ChromeOS Files.\n"
+         echo -e "\n\n- Extracted ChromeOS Files.\n"
          original_name=$(unzip -Z -1 "$codename.bin.zip")
          mv "$original_name" chromeos.bin
        else
@@ -124,7 +205,6 @@ chromeos_install() {
        else
          echo -e "\n- Unsupported Environment!"
          echo -e "\n- ChromeOS Not Installed.\n"
-         purge
          exit 1
        fi
      else
@@ -145,7 +225,7 @@ brunch_get() {
   local link=$(echo "$raw_content" | awk -v codename="$codename" '$1 == codename {print $2}')
 
   if [ -n "$link" ]; then
-    echo -e "\n- Fetching link ($codename) :\n$link\n"
+    echo -e "\n- Fetching link ($codename)\n"
     echo -e "- Downloading Brunch Framework...\n"
     length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
      wget -q --show-progress -O "$codename.tar.gz" "$link"
@@ -154,9 +234,9 @@ brunch_get() {
      if [ "$downloaded_size" -eq "$length" ]; then
        echo -e "\n- Brunch Files Downloaded\n"
        echo -e "- Extracting Brunch Framework...\n"
-       tar -xzvf "$codename.tar.gz"
+       extract_tar "$codename.tar.gz"
        if [ $? -eq 0 ]; then
-         echo -e "\n- Extracted Brunch Framework \n"
+         echo -e "\n\n- Extracted Brunch Framework \n"
        else
          echo -e "\n- Extraction Failed.\n"
          echo -e "\n- Aborting...\n"
