@@ -46,7 +46,7 @@ os_install() {
       echo -e "----------------------------------------\n"
       echo -e "$(figlet -f small Disks)\n"
       echo -e "----------------------------------------\n"
-      sudo lsblk
+      sudo lsblk | grep -E 'disk|part'
       echo -e "----------------------------------------\n"
       echo
       read -p "- Enter the desired installation location: /dev/" disk
