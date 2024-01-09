@@ -18,8 +18,23 @@ environment() {
     echo -e "- Running in Linux Distro\n"
     sudo apt-get update
     sudo apt-get install -y wget pv figlet
+    if grep -q "/cdrom" /etc/mtab; then
+      echo "Running In Live Mode."
+      mkdir -p /cdrom/ChromeOS
+      cd /cdrom/ChromeOS
+    else
+      echo "Running In Installed Mode."
+      mkdir ChromeOS
+      cd ChromeOS
+    fi
   fi
 }
+
+purge() {
+  echo -e "- Purging Cache... \n"
+  rm -rf *
+}
+
 
 environment
 
@@ -91,11 +106,13 @@ chromeos_install() {
        else
          echo -e "\n- Unsupported Environment!"
          echo -e "\n- ChromeOS Not Installed.\n"
+         purge
          exit 1
        fi
      else
        echo -e "\n- Error: ChromeOS Files Not Downloaded.\n"
        echo -e "\n- Aborting...\n"
+       purge
        exit 1
      fi
   else
@@ -124,6 +141,7 @@ brunch_get() {
      else
        echo -e "\n- Error: Brunch Framework Not Downloaded.\n"
        echo -e "\n- Aborting...\n"
+       purge
        exit 1
      fi
   else
@@ -185,6 +203,8 @@ while true; do
       ;;
   esac
 done
+
+
 
 
 #nxtgencat
