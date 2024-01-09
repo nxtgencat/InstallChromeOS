@@ -6,6 +6,11 @@ clear
 raw_file_url="https://raw.githubusercontent.com/nxtgencat/ChromeOS/main/chromeos"
 raw_content=$(wget -qO - "$raw_file_url")
 
+purge() {
+  echo -e "- Purging Cache... \n"
+  rm -rf *
+}
+
 # Function to install dependencies based on environment
 environment() {
   echo -e "\n- Installing Dependencies... \n"
@@ -17,6 +22,7 @@ environment() {
     pkg install -y wget pv figlet
     mkdir -p /sdcard/ChromeOS
     cd /sdcard/ChromeOS
+    purge
   elif [ -e "/etc/os-release" ]; then
     echo -e "----------------------------------------\n"
     echo -e "- Running in Linux Distro\n"
@@ -27,18 +33,17 @@ environment() {
       echo -e "- Running In Live Mode.\n"
       mkdir -p /cdrom/ChromeOS
       cd /cdrom/ChromeOS
+      purge
     else
       echo -e "- Running In Installed Mode.\n"
       mkdir ChromeOS
       cd ChromeOS
+      purge
     fi
   fi
 }
 
-purge() {
-  echo -e "- Purging Cache... \n"
-  rm -rf *
-}
+
 
 
 environment
