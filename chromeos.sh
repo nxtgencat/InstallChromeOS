@@ -18,12 +18,13 @@ environment() {
     echo -e "- Running in Linux Distro\n"
     sudo apt-get update
     sudo apt-get install -y wget pv figlet
+    echo -e "----------------------------------------\n"
     if grep -q "/cdrom" /etc/mtab; then
-      echo "Running In Live Mode."
+      echo -e "- Running In Live Mode.\n"
       mkdir -p /cdrom/ChromeOS
       cd /cdrom/ChromeOS
     else
-      echo "Running In Installed Mode."
+      echo -e "- Running In Installed Mode.\n"
       mkdir ChromeOS
       cd ChromeOS
     fi
@@ -203,7 +204,6 @@ while true; do
       ;;
   esac
 done
-
 
 
 
