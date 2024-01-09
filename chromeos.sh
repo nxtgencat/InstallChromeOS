@@ -11,13 +11,17 @@ environment() {
   echo -e "\n- Installing Dependencies... \n"
   sleep 1
   if [ -n "$TERMUX_VERSION" ]; then
+    echo -e "----------------------------------------\n"
     echo -e "- Running in Termux\n"
     pkg update
     pkg install -y wget pv figlet
+    mkdir -p /sdcard/ChromeOS
+    cd /sdcard/ChromeOS
   elif [ -e "/etc/os-release" ]; then
+    echo -e "----------------------------------------\n"
     echo -e "- Running in Linux Distro\n"
     sudo apt-get update
-    sudo apt-get install -y wget pv figlet
+    sudo apt-get install -y wget pv figlet cgpt
     echo -e "----------------------------------------\n"
     if grep -q "/cdrom" /etc/mtab; then
       echo -e "- Running In Live Mode.\n"
@@ -48,8 +52,13 @@ version_get() {
 
 # Function to install ChromeOS into the system
 os_install() {
-  echo
-  read -p "- Do you want to install in the default location /sda ? (y/n/o): " choice
+
+  echo -e "----------------------------------------\n"
+  echo -e "$(figlet -f small Diskpart)\n"
+  echo -e "----------------------------------------\n"
+  sudo lsblk | grep -E 'disk|part'
+  echo -e "----------------------------------------\n"
+  read -p "- Do you want to install in the default location /sda ? (y-yes/n-no/o-custom): " choice
 
   case $choice in
     [yY])
@@ -59,12 +68,7 @@ os_install() {
       exit 0
       ;;
     [oO])
-      echo -e "----------------------------------------\n"
-      echo -e "$(figlet -f small Disks)\n"
-      echo -e "----------------------------------------\n"
-      sudo lsblk | grep -E 'disk|part'
-      echo -e "----------------------------------------\n"
-      echo
+      echo " "
       read -p "- Enter the desired installation location: /dev/" disk
       echo -e "\n- Installing Chrome OS..."
       sudo bash chromeos-install.sh -src "$codename.bin.zip" -dst "/dev/$disk"
@@ -96,11 +100,19 @@ chromeos_install() {
      downloaded_size=$(wc -c < "$codename.bin.zip")
     
      if [ "$downloaded_size" -eq "$length" ]; then
-       echo -e "- ChromeOS Files Downloaded\n"
-       echo -e "- Extracting ChromeOS...\n"
+       echo -e "\n- ChromeOS Files Downloaded\n"
+       echo -e "- Extracting ChromeOS Files...\n"
        unzip "$codename.bin.zip" | pv -l >/dev/null
-       original_name=$(unzip -Z -1 "$codename.bin.zip")
-       mv "$original_name" chromeos.bin
+       if [ $? -eq 0 ]; then
+         echo -e "\n- Extracted ChromeOS Files.\n"
+         original_name=$(unzip -Z -1 "$codename.bin.zip")
+         mv "$original_name" chromeos.bin
+       else
+         echo -e "\n- Extraction Failed.\n"
+         echo -e "\n- Aborting...\n"
+         purge
+         exit 1
+       fi
 
        if [ -e "/etc/os-release" ]; then
          os_install
@@ -138,7 +150,15 @@ brunch_get() {
        echo -e "- Brunch Files Downloaded\n"
        echo -e "- Extracting Brunch Framework...\n"
        tar -xzvf "$codename.tar.gz"
-       echo -e "\n- Extracted Brunch Framework \n"
+       if [ $? -eq 0 ]; then
+         echo -e "\n- Extracted Brunch Framework \n"
+       else
+         echo -e "\n- Extraction Failed.\n"
+         echo -e "\n- Aborting...\n"
+         purge
+         exit 1
+       fi
+       
      else
        echo -e "\n- Error: Brunch Framework Not Downloaded.\n"
        echo -e "\n- Aborting...\n"
