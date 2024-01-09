@@ -147,7 +147,7 @@ brunch_get() {
      downloaded_size=$(wc -c < "$codename.tar.gz")
     
      if [ "$downloaded_size" -eq "$length" ]; then
-       echo -e "- Brunch Files Downloaded\n"
+       echo -e "\n- Brunch Files Downloaded\n"
        echo -e "- Extracting Brunch Framework...\n"
        tar -xzvf "$codename.tar.gz"
        if [ $? -eq 0 ]; then
