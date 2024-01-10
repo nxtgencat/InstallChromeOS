@@ -4,7 +4,7 @@ clear
 rm -rf chromeos LICENSE
 
 purge() {
-    echo -e "----------------------------------------\n"
+  echo -e "----------------------------------------\n"
   echo -e "- Purging Cache... \n"
   rm -rf *
 }
@@ -155,12 +155,32 @@ os_install() {
       exit 0
       ;;
     [oO])
-      echo " "
-      read -p "- Enter the desired installation location: /dev/" disk
-      echo -e "\n- Installing Chrome OS..."
-      sudo bash chromeos-install.sh -src "chromeos.bin" -dst "/dev/$disk"
-      echo -e "\n- Chrome OS Installation Completed. \n"
-      exit 0
+    while true; do
+     # Prompt the user to enter the desired installation location
+     echo " "
+     read -p "- Enter the desired installation location: /dev/" disk
+
+     # Install Chrome OS
+     echo -e "\n- Installing Chrome OS..."
+     sudo bash chromeos-install.sh -src "chromeos.bin" -dst "/dev/$disk"
+
+     # Check the exit status of the installation
+      if [ $? -eq 0 ]; then
+        echo -e "\n- Chrome OS Installation Completed. \n"
+        exit 0
+      else
+        # Prompt the user to try again in case of an error
+        echo
+        read -p "- An error occurred during installation. Do you want to try again? (y/n): " answer
+        case $answer in
+         [Yy]* ) continue;;  # Continue the loop if the user enters 'y' or 'Y'
+         * ) 
+         echo -e "\n- Chrome OS Not Installed. \n"
+         exit 1;;  # Exit the script if the user enters anything else
+        esac
+      fi
+    done
+
       ;;
     [nN])
       echo -e "\n- Aborting installation.\n"
