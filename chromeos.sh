@@ -3,6 +3,13 @@
 clear
 rm -rf chromeos LICENSE
 
+# nxtspace
+nxtspace() {
+  nxtspace=ChromeOS
+  mkdir -p "$nxtspace"
+  cd "$nxtspace"
+}
+
 # Function to purge
 purge() {
   echo -e "----------------------------------------\n"
@@ -17,29 +24,26 @@ environment() {
   if [ -n "$TERMUX_VERSION" ]; then
     echo -e "----------------------------------------\n"
     echo -e "- Running in Termux\n"
-    pkg update
-    pkg install -y wget pv figlet unzip tar
-    nxtspace=ChromeOS
-    mkdir -p "$nxtspace"
-    cd "$nxtspace"
+    pkg update && pkg install -y wget pv figlet unzip tar
+    nxtspace
     purge
   elif [ -e "/etc/os-release" ]; then
     echo -e "----------------------------------------\n"
     echo -e "- Running in Linux Distro\n"
-    sudo apt-get update
-    sudo apt-get install -y wget pv figlet cgpt unzip tar
+    sudo apt-get update && sudo apt-get install -y wget pv figlet cgpt unzip tar
     echo -e "----------------------------------------\n"
-    if grep -q "/cdrom" /etc/mtab; then
-      echo -e "- Running In Live Mode.\n"
-      nxtspace=/cdrom/ChromeOS
-      mkdir -p "$nxtspace"
-      cd "$nxtspace"
+    if [ "$(uname -a | grep -i Microsoft)" ]; then
+      echo -e "- Running In WSL Mode.\n"
+      nxtspace
       purge
+    elif grep -q "/cdrom" /etc/mtab; then
+      echo -e "- Running In Live Mode.\n"
+      mkdir -p /cdrom/ChromeOS
+      cd /cdrom/ChromeOS
+      purge    
     else
       echo -e "- Running In Installed Mode.\n"
-      nxtspace=ChromeOS
-      mkdir -p "$nxtspace"
-      cd "$nxtspace"
+      nxtspace
       purge
     fi
   fi
@@ -143,7 +147,7 @@ os_install() {
   echo -e "----------------------------------------\n"
   echo -e "$(figlet -f small Diskpart)\n"
   echo -e "----------------------------------------\n"
-  sudo lsblk | grep -E 'disk|part'
+  sudo lsblk | grep -E 'disk|part' | awk '$1 !~ /loop/ {print}'
   echo -e "----------------------------------------\n"
 
   read -p "- Do you want to (i)nstall Chrome OS, (c)reate an ISO, or (q)uit? (i/c/q): " action
@@ -168,6 +172,7 @@ os_install() {
 
 # Function to install chromeos
 install_chromeos() {
+  echo
   read -p "- Do you want to install in the default location /sda? [(y)es/(n)o/cust(o)m]: " choice
 
   case $choice in
@@ -221,9 +226,15 @@ install_chromeos() {
 create_iso() {
   
   echo -e "\n- Creating Chrome OS ISO..."
+  if [ "$(uname -a | grep -i Microsoft)" ]; then
+  sudo bash chromeos-install.sh -src chromeos.bin -dst /mnt/c/chromeos.img
+  else
   sudo bash chromeos-install.sh -src chromeos.bin -dst chromeos.img
+  fi
+
   if [ $? -eq 0 ]; then
-    echo -e "\n- Chrome OS ISO Creation Completed. \n"
+    echo -e "\n- ChromeOS Installation IMG Saved $(pwd)/chromeos.img \n"
+    echo -e "- Chrome OS ISO Creation Completed. \n"
     exit 0
   else
     echo -e "\n- Chrome OS ISO Creation Failed. \n"
@@ -367,7 +378,6 @@ while true; do
       ;;
   esac
 done
-
 
 
 
