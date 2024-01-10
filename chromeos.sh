@@ -14,7 +14,7 @@ nxtspace() {
 purge() {
   echo -e "----------------------------------------\n"
   echo -e "- Purging Cache... \n"
-  rm -rf *
+  #rm -rf *
 }
 
 # Function to install dependencies based on environment
@@ -150,7 +150,7 @@ os_install() {
   sudo lsblk | grep -E 'disk|part' | awk '$1 !~ /loop/ {print}'
   echo -e "----------------------------------------\n"
 
-  read -p "- Do you want to (i)nstall Chrome OS, (c)reate an ISO, or (q)uit? (i/c/q): " action
+  read -p "- Do you want to (i)nstall Chrome OS, (c)reate an ISO, or (q)uit ? : " action
 
   case $action in
     [iI])
@@ -173,7 +173,7 @@ os_install() {
 # Function to install chromeos
 install_chromeos() {
   echo
-  read -p "- Do you want to install in the default location /sda? [(y)es/(n)o/cust(o)m]: " choice
+  read -p "- Do you want to install in the default location /sda? [ (y)es / (n)o / cust(o)m ]: " choice
 
   case $choice in
     [yY])
@@ -227,7 +227,12 @@ create_iso() {
   
   echo -e "\n- Creating Chrome OS ISO..."
   if [ "$(uname -a | grep -i Microsoft)" ]; then
-  sudo bash chromeos-install.sh -src chromeos.bin -dst /mnt/c/chromeos.img
+  chromeisotemp=/mnt/c/ChromeOS
+  rm -rf $chromeisotemp
+  mkdir -p $chromeisotemp
+  mv chromeos.bin efi_legacy.img efi_secure.img chromeos-install.sh rootc.img $chromeisotemp/
+  cd $chromeisotemp
+  sudo bash chromeos-install.sh -src chromeos.bin -dst $chromeisotemp/chromeos.img
   else
   sudo bash chromeos-install.sh -src chromeos.bin -dst chromeos.img
   fi
@@ -241,6 +246,7 @@ create_iso() {
     exit 1
   fi  
 }
+
 
 # Function to install ChromeOS
 chromeos_get() {
@@ -335,7 +341,8 @@ show_menu() {
   echo -e "3. Intel 10th Gen $(version_get "jinlon")\n   (Board: Hatch, Codename: Jinlon)\n"
   echo -e "4. Intel 11th Gen & Above $(version_get "voxel")\n   (Board: Volteer, Codename: Voxel)\n"
   echo -e "5. AMD $(version_get "gumboz")\n   (Board: Zork, Codename: Gumboz)\n"
-  echo -e "6. Exit\n"
+  echo -e "6. Offline Install\n"
+  echo -e "7. Exit\n"
 }
 
 # Main script
@@ -369,15 +376,24 @@ while true; do
       chromeos_get "gumboz"
       ;;
     6)
+      os_install
+      ;;
+    7)
       echo -e "- Exiting the script. Goodbye!\n"
       exit 0
-      ;;
+      ;;      
     *)
       clear
       echo -e "- Invalid choice. Please retry with a valid option (1-6).\n"
       ;;
   esac
 done
+
+
+
+
+
+
 
 
 
