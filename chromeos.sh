@@ -1,7 +1,7 @@
 #!/bin/bash
 
 clear
-rm -rf chromeos
+rm -rf chromeos LICENCE
 
 purge() {
     echo -e "----------------------------------------\n"
