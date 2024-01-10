@@ -3,6 +3,7 @@
 clear
 rm -rf chromeos LICENSE
 
+# Function to purge
 purge() {
   echo -e "----------------------------------------\n"
   echo -e "- Purging Cache... \n"
@@ -17,7 +18,7 @@ environment() {
     echo -e "----------------------------------------\n"
     echo -e "- Running in Termux\n"
     pkg update
-    pkg install -y wget pv figlet
+    pkg install -y wget pv figlet unzip tar
     nxtspace=ChromeOS
     mkdir -p "$nxtspace"
     cd "$nxtspace"
@@ -26,7 +27,7 @@ environment() {
     echo -e "----------------------------------------\n"
     echo -e "- Running in Linux Distro\n"
     sudo apt-get update
-    sudo apt-get install -y wget pv figlet cgpt
+    sudo apt-get install -y wget pv figlet cgpt unzip tar
     echo -e "----------------------------------------\n"
     if grep -q "/cdrom" /etc/mtab; then
       echo -e "- Running In Live Mode.\n"
@@ -57,130 +58,153 @@ version_get() {
   echo "(Stable: $version)"
 }
 
-
+# Function to extract tar with progress bar
 extract_tar() {
  local userinputzipfile=$1
-tempdir="zipnxt"
-tempdirx="$tempdir/ziptemp"
-logfile="$tempdir/zipnxt.log"
+ tempdir="zipnxt"
+ tempdirx="$tempdir/ziptemp"
+ logfile="$tempdir/zipnxt.log"
 
-rm -rf "tempdir"
-mkdir -p "$tempdirx"
-# Function to display a progress bar
-show_progress_bar() {
-  local width=50
-  local percentage=$1
-  local progress=$((width * percentage / 100))
-  printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
+ rm -rf "tempdir"
+ mkdir -p "$tempdirx"
+ # Function to display a progress bar
+ show_progress_bar() {
+   local width=50
+   local percentage=$1
+   local progress=$((width * percentage / 100))
+   printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
+  }
+
+ # Unzip and show progress
+ tar -ztvf "$userinputzipfile" | awk '{print $6, $3}' > "$logfile"
+ total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
+
+ # Extract files
+ tar -xzf "$userinputzipfile" -C "$tempdirx" &
+
+ # Monitor progress
+ while :; do
+   completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
+   progress_percentage=$((completed_size * 100 / total_size))
+   show_progress_bar "$progress_percentage"
+
+    if [[ "$completed_size" -ge "$total_size" ]]; then
+      break
+    fi
+    sleep 1
+  done
+ mv -f "$tempdirx"/* .
+ rm -rf "$tempdir"
 }
 
-# Unzip and show progress
-tar -ztvf "$userinputzipfile" | awk '{print $6, $3}' > "$logfile"
-total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
-
-# Extract files
-tar -xzf "$userinputzipfile" -C "$tempdirx" &
-
-# Monitor progress
-while :; do
-  completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
-  progress_percentage=$((completed_size * 100 / total_size))
-  show_progress_bar "$progress_percentage"
-
-  if [[ "$completed_size" -ge "$total_size" ]]; then
-    break
-  fi
- sleep 1
-done
-mv -f "$tempdirx"/* .
-rm -rf "$tempdir"
-}
-
-
+# Function to extract zip with progress bar
 extract_zip() {
  local userinputzipfile=$1
-tempdir="zipnxt"
-tempdirx="$tempdir/ziptemp"
-logfile="$tempdir/zipnxt.log"
+ tempdir="zipnxt"
+ tempdirx="$tempdir/ziptemp"
+ logfile="$tempdir/zipnxt.log"
 
-rm -rf "tempdir"
-mkdir -p "$tempdirx"
+ rm -rf "tempdir"
+ mkdir -p "$tempdirx"
 
-# Function to display a progress bar
-show_progress_bar() {
-  local width=50
-  local percentage=$1
-  local progress=$((width * percentage / 100))
-  printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
-}
+ # Function to display a progress bar
+ show_progress_bar() {
+   local width=50
+   local percentage=$1
+   local progress=$((width * percentage / 100))
+   printf "[%-${width}s] %d%%\r" "$(printf '='%.0s $(seq "$progress"))" "$percentage"
+  }
 
-# Unzip and show progress
-unzip -l "$userinputzipfile" | awk '{print $4, $1}' > "$logfile"
-total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
+ # Unzip and show progress
+ unzip -l "$userinputzipfile" | awk '{print $4, $1}' > "$logfile"
+ total_size=$(awk '{sum += $2} END {print sum}' "$logfile")
 
-# Extract files
-unzip -q "$userinputzipfile" -d "$tempdirx" &
+ # Extract files
+ unzip -q "$userinputzipfile" -d "$tempdirx" &
 
-# Monitor progress
-while :; do
-  completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
-  progress_percentage=$((completed_size * 100 / total_size))
-  show_progress_bar "$progress_percentage"
+ # Monitor progress
+ while :; do
+   completed_size=$(du --bytes --max-depth=0 "$tempdirx" | awk '{print $1}')
+   progress_percentage=$((completed_size * 100 / total_size))
+   show_progress_bar "$progress_percentage"
 
-  if [[ "$completed_size" -ge "$total_size" ]]; then
-    break
-  fi
- sleep 1
-done
+   if [[ "$completed_size" -ge "$total_size" ]]; then
+     break
+   fi
+   sleep 1
+  done
 
-mv -f "$tempdirx"/* .
-rm -rf "$tempdir"
+ mv -f "$tempdirx"/* .
+ rm -rf "$tempdir"
 }
 
 # Function to install ChromeOS into the system
 os_install() {
-
   echo -e "----------------------------------------\n"
   echo -e "$(figlet -f small Diskpart)\n"
   echo -e "----------------------------------------\n"
   sudo lsblk | grep -E 'disk|part'
   echo -e "----------------------------------------\n"
-  read -p "- Do you want to install in the default location /sda ? (y-yes/n-no/o-custom): " choice
+
+  read -p "- Do you want to (i)nstall Chrome OS, (c)reate an ISO, or (q)uit? (i/c/q): " action
+
+  case $action in
+    [iI])
+      install_chromeos
+      ;;
+    [cC])
+      create_iso
+      ;;
+    [qQ])
+      echo -e "\n- Quitting the installation.\n"
+      exit 0
+      ;;
+    *)
+      echo -e "- Invalid choice. Please enter 'i', 'c', or 'q'."
+      os_install
+      ;;
+  esac
+}
+
+# Function to install chromeos
+install_chromeos() {
+  read -p "- Do you want to install in the default location /sda? [(y)es/(n)o/cust(o)m]: " choice
 
   case $choice in
     [yY])
       echo -e "\n- Installing Chrome OS..."
       sudo bash chromeos-install.sh -src "chromeos.bin" -dst /dev/sda
-      echo -e "\n- Chrome OS Installation Completed. \n"
-      exit 0
+        if [ $? -eq 0 ]; then
+          echo -e "\n- Chrome OS Installation Completed. \n"
+          exit 0
+        else
+           echo -e "\n- Chrome OS Not Installed. \n"
+           exit 1
+        fi
       ;;
     [oO])
-    while true; do
-     # Prompt the user to enter the desired installation location
-     echo " "
-     read -p "- Enter the desired installation location: /dev/" disk
+      while true; do
+        
+        echo " "
+        read -p "- Enter the desired installation location: /dev/" disk
 
-     # Install Chrome OS
-     echo -e "\n- Installing Chrome OS..."
-     sudo bash chromeos-install.sh -src "chromeos.bin" -dst "/dev/$disk"
+        echo -e "\n- Installing Chrome OS..."
+        sudo bash chromeos-install.sh -src "chromeos.bin" -dst "/dev/$disk"
 
-     # Check the exit status of the installation
-      if [ $? -eq 0 ]; then
-        echo -e "\n- Chrome OS Installation Completed. \n"
-        exit 0
-      else
-        # Prompt the user to try again in case of an error
-        echo
-        read -p "- An error occurred during installation. Do you want to try again? (y/n): " answer
-        case $answer in
-         [Yy]* ) continue;;  # Continue the loop if the user enters 'y' or 'Y'
-         * ) 
-         echo -e "\n- Chrome OS Not Installed. \n"
-         exit 1;;  # Exit the script if the user enters anything else
-        esac
-      fi
-    done
-
+        if [ $? -eq 0 ]; then
+          echo -e "\n- Chrome OS Installation Completed. \n"
+          exit 0
+        else
+          echo
+          read -p "- An error occurred during installation. Do you want to try again? (y/n): " answer
+          case $answer in
+            [Yy]* ) continue;;
+            * )
+              echo -e "\n- Chrome OS Not Installed. \n"
+              exit 1;; 
+          esac
+        fi
+      done
       ;;
     [nN])
       echo -e "\n- Aborting installation.\n"
@@ -193,16 +217,29 @@ os_install() {
   esac
 }
 
+# Function to create iso
+create_iso() {
+  
+  echo -e "\n- Creating Chrome OS ISO..."
+  sudo bash chromeos-install.sh -src chromeos.bin -dst chromeos.img
+  if [ $? -eq 0 ]; then
+    echo -e "\n- Chrome OS ISO Creation Completed. \n"
+    exit 0
+  else
+    echo -e "\n- Chrome OS ISO Creation Failed. \n"
+    exit 1
+  fi  
+}
 
 # Function to install ChromeOS
-chromeos_install() {
+chromeos_get() {
   local codename=$1
   local link=$(echo "$raw_content" | awk -v codename="$codename" '$1 == codename {print $2}')
 
   if [ -n "$link" ]; then
-    echo -e "\n- Fetching link ($codename)\n"
-    echo -e "- Downloading ChromeOS Files...\n"
-    length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
+     echo -e "\n- Fetching link ($codename)\n"
+     echo -e "- Downloading ChromeOS Files...\n"
+     length=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
      wget -q --show-progress -O "$codename.bin.zip" "$link"
      downloaded_size=$(wc -c < "$codename.bin.zip")
     
@@ -227,13 +264,13 @@ chromeos_install() {
          echo -e "\n- Unsupported Environment!"
          echo -e "\n- ChromeOS Not Installed.\n"
          exit 1
-       fi
+        fi
      else
        echo -e "\n- Error: ChromeOS Files Not Downloaded.\n"
        echo -e "\n- Aborting...\n"
        purge
        exit 1
-     fi
+      fi
   else
     echo -e "- Link Not Found For Codename: $codename\n"
     exit 1
@@ -302,23 +339,23 @@ while true; do
   case $choice in
     1)
       brunch_get "brunch"
-      chromeos_install "shyvana"
+      chromeos_get "shyvana"
       ;;
     2)
       brunch_get "brunch"
-      chromeos_install "bobba"
+      chromeos_get "bobba"
       ;;
     3)
       brunch_get "brunch"
-      chromeos_install "jinlon"
+      chromeos_get "jinlon"
       ;;
     4)
       brunch_get "brunch"
-      chromeos_install "voxel"
+      chromeos_get "voxel"
       ;;
     5)
       brunch_get "brunch"
-      chromeos_install "gumboz"
+      chromeos_get "gumboz"
       ;;
     6)
       echo -e "- Exiting the script. Goodbye!\n"
@@ -330,6 +367,8 @@ while true; do
       ;;
   esac
 done
+
+
 
 
 
