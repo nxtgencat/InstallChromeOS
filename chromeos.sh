@@ -225,7 +225,7 @@ install_chromeos() {
 # Function to create iso
 create_iso() {
   
-  echo -e "\n- Creating Chrome OS ISO..."
+  echo -e "\n- Creating Chrome OS ISO...\n"
   if [ "$(uname -a | grep -i Microsoft)" ]; then
   chromeisotemp=/mnt/c/ChromeOS
   rm -rf $chromeisotemp
