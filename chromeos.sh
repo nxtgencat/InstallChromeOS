@@ -148,7 +148,7 @@ os_install() {
   echo -e "$(figlet -f small Diskpart)\n"
   echo -e "----------------------------------------\n"
   sudo lsblk | grep -E 'disk|part' | awk '$1 !~ /loop/ {print}'
-  echo -e "----------------------------------------\n"
+  echo -e "\n----------------------------------------\n"
 
   read -p "- Do you want to (i)nstall Chrome OS, (c)reate an ISO, or (q)uit ? : " action
 
