@@ -306,7 +306,7 @@ while true; do
       ;;
     *)
       clear
-      echo "- Invalid choice. Please retry with a valid option (1-6).\n"
+      echo -r "- Invalid choice. Please retry with a valid option (1-6).\n"
       ;;
   esac
 done
