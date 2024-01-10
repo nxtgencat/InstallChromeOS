@@ -1,6 +1,7 @@
 #!/bin/bash
 
 clear
+rm -rf !(chromeos.sh|ChromeOS)
 
 purge() {
     echo -e "----------------------------------------\n"
