@@ -359,8 +359,8 @@ download_and_extract_chromeos() {
 
   echo -e "- Downloading ChromeOS Files...\n"
   wget -q --show-progress -O "$codename.bin.zip" "$link"
-  
-  local downloaded_size=$(stat -c%s "$codename.tar.gz")
+
+  local downloaded_size=$(stat -c%s "$codename.bin.zip")
   local online_size=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
 
 
