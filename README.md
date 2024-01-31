@@ -1,7 +1,8 @@
-# ChromeOS Easy Installation Script
-## This repository provides an easy installation script for ChromeOS along with official recovery images. The script is built on the Brunch Framework to simplify the installation process on both Windows Subsystem for Linux (WSL) and Linux environments.
+# ChromeOS Installation Script
 
-### Features
+This repository provides an easy installation script for ChromeOS along with official recovery images. The script is built on the Brunch Framework to simplify the installation process on both Windows Subsystem for Linux (WSL) and Linux environments.
+
+## Features
 
 - **Direct Install ChromeOS:** The script allows for a straightforward installation of ChromeOS, eliminating the need for complex manual procedures.
 
