@@ -32,6 +32,8 @@ This repository provides an easy installation script for ChromeOS along with off
 4.  Run the ChromeOS installation script:
 ```bash
     ./ChromeOS
+     or
+     bash ChromeOS.sh
 ```
 
 
