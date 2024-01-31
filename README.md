@@ -19,23 +19,19 @@ This repository provides an easy installation script for ChromeOS along with off
 
 1. Install Git:
 ```bash
-   sudo apt-get install git
+sudo apt-get install git
 ```
 2. Clone the ChromeOS repository:
 ```bash
-   git clone https://github.com/nxtgencat/ChromeOS
+git clone https://github.com/nxtgencat/ChromeOS
 ```
 3. Change directory to ChromeOS:
 ```bash
-   cd ChromeOS
+cd ChromeOS
 ```
 4.  Run the ChromeOS installation script:
 ```bash
-    ./ChromeOS
-```
-or
-```bash
-     bash ChromeOS.sh
+bash ChromeOS.sh
 ```
 
 That's it! The script will guide you through the installation process, and you'll have ChromeOS up and running on your system.
