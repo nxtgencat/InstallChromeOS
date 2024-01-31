@@ -15,7 +15,7 @@ nxtspace() {
 purge() {
   echo -e "----------------------------------------\n"
   echo -e "- Purging Cache... \n"
-  #rm -rf *
+  #rm -rf * /// not used
 }
 
 # Function to install dependencies based on environment
