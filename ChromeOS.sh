@@ -285,10 +285,13 @@ brunch_get() {
 download_and_extract_brunch() {
   local link="$1"
   local codename="$2"
-
+  
   echo -e "- Downloading Brunch Framework...\n"
   wget -q --show-progress -O "$codename.tar.gz" "$link"
-  downloaded_size=$(wc -c < "$codename.tar.gz")
+
+  local downloaded_size=$(stat -c%s "$codename.tar.gz")
+  local online_size=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
+
 
   if [ "$downloaded_size" -eq "$online_size" ]; then
     echo -e "\n- Brunch Files Downloaded\n"
@@ -356,7 +359,10 @@ download_and_extract_chromeos() {
 
   echo -e "- Downloading ChromeOS Files...\n"
   wget -q --show-progress -O "$codename.bin.zip" "$link"
-  downloaded_size=$(wc -c < "$codename.bin.zip")
+  
+  local downloaded_size=$(stat -c%s "$codename.tar.gz")
+  local online_size=$(wget --spider "$link" 2>&1 | grep "Length" | awk '{print $2}')
+
 
   if [ "$downloaded_size" -eq "$online_size" ]; then
     echo -e "\n- ChromeOS Files Downloaded\n"
