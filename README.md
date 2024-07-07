@@ -21,7 +21,7 @@ sudo apt-get install git
 ```
 2. Clone the ChromeOS repository:
 ```bash
-git clone https://github.com/nxtgencat/ChromeOS
+git clone https://github.com/nxtgencat/InstallChromeOS
 ```
 3. Change directory to ChromeOS:
 ```bash
