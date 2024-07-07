@@ -29,7 +29,7 @@ cd ChromeOS
 ```
 4.  Run the ChromeOS installation script:
 ```bash
-bash ChromeOS.sh
+bash nxtchrome.sh
 ```
 
 That's it! The script will guide you through the installation process, and you'll have ChromeOS up and running on your system.
