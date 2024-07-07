@@ -25,7 +25,7 @@ git clone https://github.com/nxtgencat/InstallChromeOS
 ```
 3. Change directory to ChromeOS:
 ```bash
-cd ChromeOS
+cd InstallChromeOS
 ```
 4.  Run the ChromeOS installation script:
 ```bash
