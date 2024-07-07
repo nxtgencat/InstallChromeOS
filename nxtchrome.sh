@@ -14,13 +14,13 @@ environment() {
   if [ -n "$TERMUX_VERSION" ]; then
     echo -e "----------------------------------------\n"
     echo -e "- Running in Termux\n"
-    pkg update && pkg install -y  figlet pv p7zip-full
+    pkg update && pkg install -y pv p7zip-full
     nxtspace
     purge
   elif [ -e "/etc/os-release" ]; then
     echo -e "----------------------------------------\n"
     echo -e "- Running in Linux Distro\n"
-    sudo apt-get update && sudo apt-get install -y figlet pv p7zip-full cgpt
+    sudo apt-get update && sudo apt-get install -y pv p7zip-full cgpt
     echo -e "----------------------------------------\n"
     if [ "$(uname -a | grep -i Microsoft)" ]; then
       echo -e "- Running In WSL Mode.\n"
@@ -255,9 +255,11 @@ extract_zip_with_progress() {
 
 # Function to install ChromeOS into the system
 os_install() {
-  echo -e "----------------------------------------\n"
-  echo -e "$(figlet -f small Diskpart)\n"
-  echo -e "----------------------------------------\n"
+echo -e "\e[96m┌────────────────────────────────────────────┐"
+echo -e "│ ░█▀▀▄ ▀█▀ ░█▀▀▀█ ░█─▄▀ ░█▀▀█ ─█▀▀█ ░█▀▀█ ▀▀█▀▀ "
+echo -e "│ ░█─░█ ░█─ ─▀▀▀▄▄ ░█▀▄─ ░█▄▄█ ░█▄▄█ ░█▄▄▀ ─░█ "
+echo -e "│ ░█▄▄▀ ▄█▄ ░█▄▄▄█ ░█─░█ ░█─── ░█─░█ ░█─░█ ─░█ "
+echo -e "└────────────────────────────────────────────┘\e[0m"
   sudo lsblk | grep -E 'disk|part' | awk '$1 !~ /loop/ {print}'
   echo -e "\n----------------------------------------\n"
 
@@ -362,14 +364,11 @@ create_iso() {
 # Function to display the menu
 show_menu() {
     clear
-    echo "┌──────────────────────────────────────────────────┐"
-    echo -e "│      \e[96m█▀▀ █░░█ █▀▀█ █▀▀█ █▀▄▀█ █▀▀ █▀▀█ █▀▀\e[0m       │"
-    echo -e "│      \e[96m█░░ █▀▀█ █▄▄▀ █░░█ █░▀░█ █▀▀ █░░█ ▀▀█\e[0m       │"
-    echo -e "│      \e[96m▀▀▀ ▀░░▀ ▀░▀▀ ▀▀▀▀ ▀░░░▀ ▀▀▀ ▀▀▀▀ ▀▀▀\e[0m       │"
-    echo "│                                                  │"
-    echo -e "│      \e[96m█▄░█ ▀▄▀ ▀█▀ █▀▀ █▀▀ █▄░█ █▀▀ ▄▀█ ▀█▀\e[0m       │"
-    echo -e "│      \e[96m█░▀█ █░█ ░█░ █▄█ ██▄ █░▀█ █▄▄ █▀█ ░█░\e[0m       │"
-    echo "└──────────────────────────────────────────────────┘"
+    echo -e "\e[96m┌──────────────────────────────────────────────────┐"
+    echo -e "│ ░█▀▀█ ░█─░█ ░█▀▀█ ░█▀▀▀█ ░█▀▄▀█ ░█▀▀▀ ░█▀▀▀█ ░█▀▀▀█ "
+    echo -e "│ ░█─── ░█▀▀█ ░█▄▄▀ ░█──░█ ░█░█░█ ░█▀▀▀ ░█──░█ ─▀▀▀▄▄ "
+    echo -e "│ ░█▄▄█ ░█─░█ ░█─░█ ░█▄▄▄█ ░█──░█ ░█▄▄▄ ░█▄▄▄█ ░█▄▄▄█ "
+    echo -e "└──────────────────────────────────────────────────┘\e[0m"
     echo -e "\n1. Intel 6th & 7th Gen    (Board: Rammus, Codename: Shyvana) - Latest Version: $(scrape_latest_version shyvana)"
     echo -e "\n2. Intel Celeron          (Board: Octopus, Codename: Bobba)  - Latest Version: $(scrape_latest_version bobba)"
     echo -e "\n3. Intel 10th Gen         (Board: Hatch, Codename: Jinlon)   - Latest Version: $(scrape_latest_version jinlon)"
